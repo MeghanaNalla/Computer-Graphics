@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<!��----------------------------�---------------->
+<!�� Submitted by Meghana Reddy Nalla ��>
+<!��---------------------��---------------------�>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<p> </p>
+<div>
+Warmth -2 <input id="Warmth" type="range" min="-128" max="128" step="1" value="0" /> 2
+</div>
+<div>
+Brightness -2 <input id="Brightness" type="range" min="-128" max="128" step="1" value="0" /> 2
+</div>
+<div>
+    Contrast -2 <input id="Contrast" type="range" min="-128" max="128" step="1" value="0" /> 2
+</div>
+<div>
+    Saturation -2 <input id="Saturation" type="range" min="-128" max="128" step="1" value="0" /> 2
+</div>
+<div>
+    Invert Image <input id="Invert" type="checkbox" />
+</div>
+<div>
+    Greyscale Image <input id="Greyscale" type="checkbox" />    
+</div>
+
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+#version 300 es
+
+in  vec2 vPosition;
+in  vec2 vTexCoord;
+out vec2 fTexCoord;
+
+uniform mat4 P;
+
+void main()
+{
+    fTexCoord = vTexCoord;
+
+    gl_Position = P * vec4(vPosition, 0, 1);
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+#version 300 es
+precision mediump float;
+
+in vec2 fTexCoord;
+out vec4 fColor;
+
+uniform sampler2D texMap;
+uniform float warmth;
+uniform float brightness;
+uniform float contrast;
+uniform float saturation;
+uniform int invert; 
+uniform int greyscale;
+
+// Function to invert the image
+vec3 InvertImage(vec3 color) {
+    return vec3(1.0) - color;
+}
+
+vec3 RGBToHSL(vec3 color) {
+    vec3 hsl;
+    float cmin = min(color.r, min(color.g, color.b));
+    float cmax = max(color.r, max(color.g, color.b));
+    float delta = cmax - cmin;
+
+    hsl.z = (cmax + cmin) / 2.0;  // Lightness
+
+    if (delta < 0.00001) {  // Grayscale, no hue
+        hsl.x = 0.0;  // Hue
+        hsl.y = 0.0;  // Saturation
+    } else {
+        if (hsl.z < 0.5) {
+            hsl.y = delta / (cmax + cmin);
+        } else {
+            hsl.y = delta / (2.0 - cmax - cmin);
+        }
+
+        if (cmax == color.r) {
+            hsl.x = ((color.g - color.b) / delta + (color.g < color.b ? 6.0 : 0.0)) / 6.0;
+        } else if (cmax == color.g) {
+            hsl.x = ((color.b - color.r) / delta + 2.0) / 6.0;
+        } else {
+            hsl.x = ((color.r - color.g) / delta + 4.0) / 6.0;
+        }
+    }
+
+    return hsl;
+}
+
+float HueToRGB(float p, float q, float t) {
+    if (t < 0.0) t += 1.0;
+    if (t > 1.0) t -= 1.0;
+    if (t < 1.0/6.0) return p + (q - p) * 6.0 * t;
+    if (t < 1.0/2.0) return q;
+    if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
+    return p;
+}
+
+vec3 HSLToRGB(vec3 hsl) {
+    vec3 rgb;
+    if (hsl.y < 0.00001) {
+        rgb = vec3(hsl.z);  
+    } else {
+        float q = (hsl.z < 0.5) ? (hsl.z * (1.0 + hsl.y)) : (hsl.z + hsl.y - hsl.z * hsl.y);
+        float p = 2.0 * hsl.z - q;
+        rgb = vec3(HueToRGB(p, q, hsl.x + 1.0/3.0), HueToRGB(p, q, hsl.x), HueToRGB(p, q, hsl.x - 1.0/3.0));
+    }
+    return rgb;
+}
+
+
+void main()
+{
+    vec4 color = texture(texMap, fTexCoord);   // Note texture2d is deprecated in webGL 2.0
+
+    color.r += warmth;
+    color.b -= warmth;
+
+    color.rgb += brightness;
+    
+    float midpointGray = 0.5;
+    color.rgb = ((color.rgb - vec3(midpointGray)) * contrast) + vec3(midpointGray);
+
+    vec3 hsl = RGBToHSL(color.rgb);
+    hsl.y += saturation;  
+    color.rgb = HSLToRGB(hsl);
+
+    
+    color.rgb = (invert == 1) ? InvertImage(color.rgb) : color.rgb;
+
+    if (greyscale == 1) { // greyscale checkbox checked
+        float greyscaleValue = (color.r + color.g + color.b) / 3.0; // Average Method
+        color = vec4(greyscaleValue, greyscaleValue, greyscaleValue, 1.0);
+    }
+
+    fColor = color;
+}
+</script>
+
+<script type="text/javascript" src="initShaders.js"></script>
+<script type="text/javascript" src="MVnew.js"></script>
+<script type="text/javascript" src="imageProcess.js"></script>
+</head>
+
+<body>
+<canvas id="gl-canvas" width="1280" height="720"> <!---- Set canvas to be 720P -->
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+<img id="texImage" src="beach.png" alt="Beach Image" hidden/>
+
+
+</body>
+</html>
