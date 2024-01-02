@@ -70,4 +70,5 @@ In order to run the image processing application locally, you need to set up a s
 
 **Note:** There are options to further configure the web server, but the provided command will start a server at port 8000 on localhost.
 
+![image](https://github.com/MeghanaNalla/Computer-Graphics/assets/123588774/0fe370c5-a8c2-4f55-9703-4da03629cb9d)
 
