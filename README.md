@@ -38,4 +38,36 @@ Simply open the `index.html` file in a web browser. No additional installation o
 - This project uses HTML, CSS, and JavaScript for the frontend.
 - Ensure that your browser supports WebGL for shader-based image processing.
 
+## Setting up a Local Web Server
+
+In order to run the image processing application locally, you need to set up a simple web server. Follow these steps:
+
+1. **Install Python 3.x:**
+   - If you haven't already, download and install Python 3.x from [Python's official website](https://www.python.org/downloads/).
+
+2. **Navigate to Your Project Folder:**
+   - Open a PowerShell window and navigate to the folder where all your HTML and JS files for the project are located.
+
+3. **Open PowerShell in the Project Folder:**
+   - Shift right-click in the project folder and choose "Open PowerShell."
+
+4. **Start the Web Server:**
+   - In the PowerShell window, execute the following Python command:
+     ```powershell
+     py -m http.server
+     ```
+     If the server starts successfully, you should see a message like this:
+     ```
+     Serving HTTP on :: port 8000 (http://[::]:8000/) ...
+     ```
+     By default, the server will run on localhost at port 8000.
+
+5. **Access Your Application:**
+   - Open your web browser and navigate to [http://localhost:8000](http://localhost:8000) to access your image processing application.
+
+6. **Start Your App:**
+   - Interact with your app through the GUI controls to apply various image processing methods.
+
+**Note:** There are options to further configure the web server, but the provided command will start a server at port 8000 on localhost.
+
 
